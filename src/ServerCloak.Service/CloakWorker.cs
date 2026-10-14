@@ -11,6 +11,7 @@ public class CloakWorker(ILogger<CloakWorker> logger, ILoggerFactory loggerFacto
 
     private readonly List<Cloak> _cloaks = [];
     private readonly object _blockLock = new();
+    private readonly object _rangeLock = new();
     private readonly Queue<DateTime> _recentBlocks = new();
     private readonly Dictionary<string, DateTime> _realAccountAlerts = new(StringComparer.OrdinalIgnoreCase);
     private readonly DateTime _started = DateTime.Now;
@@ -181,17 +182,19 @@ public class CloakWorker(ILogger<CloakWorker> logger, ILoggerFactory loggerFacto
     {
         var s = AlertSettings.Load();
         var now = DateTime.Now;
+        int count;
         lock (_recentBlocks)
         {
             _recentBlocks.Enqueue(now);
             while (_recentBlocks.Count > 0 && now - _recentBlocks.Peek() > TimeSpan.FromMinutes(Math.Max(1, s.SpikeMinutes)))
                 _recentBlocks.Dequeue();
-            if (_recentBlocks.Count < Math.Max(2, s.SpikeBlocks) || now - _lastSpikeAlert < TimeSpan.FromHours(1))
+            count = _recentBlocks.Count;
+            if (count < Math.Max(2, s.SpikeBlocks) || now - _lastSpikeAlert < TimeSpan.FromHours(1))
                 return;
             _lastSpikeAlert = now;
         }
-        logger.LogWarning("Block spike: {Count} addresses blocked in {Minutes} minutes.", s.SpikeBlocks, s.SpikeMinutes);
-        _ = Alert(AlertKind.Spike, "Attack spike", $"{s.SpikeBlocks} or more addresses were blocked in the last {s.SpikeMinutes} minutes.");
+        logger.LogWarning("Block spike: {Count} addresses blocked in {Minutes} minutes.", count, s.SpikeMinutes);
+        _ = Alert(AlertKind.Spike, "Attack spike", $"{count} addresses were blocked in the last {s.SpikeMinutes} minutes.");
     }
 
     private async Task ReportAsync(string ip, CloakEnum cloak, string name)
@@ -249,8 +252,10 @@ public class CloakWorker(ILogger<CloakWorker> logger, ILoggerFactory loggerFacto
             var users = CloakStore.GetTopUsernames(since, 5);
             if (users.Count > 0)
                 sb.AppendLine("Top user names: " + string.Join(", ", users.Select(u => $"{u.User}{(u.RealAccount ? " (real)" : "")} {u.Attempts:N0}")));
-            var countries = events.Select(x => GeoIp.Lookup(x.Ip) ?? "").GroupBy(x => x).OrderByDescending(g => g.Count()).Take(5)
-                .Select(g => $"{GeoIp.CountryName(g.Key)} {g.Count():N0}");
+            // Look up each address once; a busy day can have tens of thousands of events.
+            var countries = events.GroupBy(x => x.Ip).Select(g => (Country: GeoIp.Lookup(g.Key) ?? "", Count: g.Count()))
+                .GroupBy(x => x.Country).Select(g => (g.Key, Count: g.Sum(x => x.Count))).OrderByDescending(x => x.Count).Take(5)
+                .Select(x => $"{GeoIp.CountryName(x.Key)} {x.Count:N0}");
             if (events.Count > 0)
                 sb.AppendLine("Top countries: " + string.Join(", ", countries));
             await Alert(AlertKind.DailySummary, "Daily summary", sb.ToString().TrimEnd());
@@ -325,7 +330,22 @@ public class CloakWorker(ILogger<CloakWorker> logger, ILoggerFactory loggerFacto
         }
     }
 
+    // The startup sync, the hourly update and the app's change flag can overlap; skip if one is already running.
     private void SyncRanges()
+    {
+        if (!Monitor.TryEnter(_rangeLock))
+        {
+            CloakStore.SetBool(CloakStore.KeyRangesChanged, true);
+            return;
+        }
+        try
+        {
+            SyncRangesCore();
+        }
+        finally { Monitor.Exit(_rangeLock); }
+    }
+
+    private void SyncRangesCore()
     {
         try
         {

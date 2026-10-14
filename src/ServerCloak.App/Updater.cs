@@ -11,7 +11,7 @@ namespace ServerCloak.App;
 /// <summary>Checks GitHub releases for a newer version and runs its installer.</summary>
 public static class Updater
 {
-    public const string DefaultRepo = "vikasrulez/ServerCloak";
+    public const string DefaultRepo = "ivikasrana/ServerCloak.Net";
 
     public record Release(Version Version, string Tag, string Url, string? InstallerUrl, string? InstallerName, string Notes);
 
@@ -66,7 +66,7 @@ public static class Updater
     {
         if (release.InstallerUrl == null)
             throw new InvalidOperationException("This release has no installer attached.");
-        var dir = Path.Combine(Path.GetTempPath(), "ServerCloakUpdate");
+        var dir = Path.Combine(Path.GetTempPath(), $"ServerCloakUpdate-{release.Version}");
         Directory.CreateDirectory(dir);
         var path = Path.Combine(dir, Path.GetFileName(release.InstallerName ?? "ServerCloak-Setup.exe"));
         using (var http = NewClient())

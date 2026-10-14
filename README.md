@@ -89,7 +89,7 @@ The published build is self-contained: .NET does not need to be installed on the
 ## Build and publish
 
 ```powershell
-git clone https://github.com/vikasrulez/ServerCloak.git
+git clone https://github.com/ivikasrana/ServerCloak.Net.git
 cd ServerCloak
 ```
 
@@ -101,7 +101,7 @@ Open `ServerCloak.slnx` in Visual Studio, or publish from PowerShell:
 ```
 
 The installer is written to `.\publish-installer\ServerCloak-Setup-<version>.exe`. For auto-update, attach it to a
-GitHub release tagged `v<version>` in the repository set on the App card (default `vikasrulez/ServerCloak`).
+GitHub release tagged `v<version>` in the repository set on the App card (default `ivikasrana/ServerCloak.Net`).
 The version number is set in `Directory.Build.props`.
 
 To run only the tests, build `tests/ServerCloak.Tests` and run
