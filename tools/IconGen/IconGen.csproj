@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Renders assets\ServerCloak.ico. From the repo root: dotnet run (project tools\IconGen) with argument assets\ServerCloak.ico -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+</Project>

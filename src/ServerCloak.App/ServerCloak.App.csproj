@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <!-- Windows Forms is only used for the tray icon (NotifyIcon). -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>ServerCloak</AssemblyName>
+    <RootNamespace>ServerCloak.App</RootNamespace>
+    <ApplicationIcon>..\..\assets\ServerCloak.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- DPI awareness is set in app.manifest for WPF; the Windows Forms analyzer does not apply. -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\..\assets\ServerCloak.ico" Link="Assets\ServerCloak.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PDFsharp" Version="6.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ServerCloak.Core\ServerCloak.Core.csproj" />
+  </ItemGroup>
+
+</Project>

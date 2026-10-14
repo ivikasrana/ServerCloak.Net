@@ -1,0 +1,825 @@
+<Window x:Class="ServerCloak.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:app="clr-namespace:ServerCloak.App"
+        Title="ServerCloak" Width="1320" Height="900" MinWidth="1080" MinHeight="640"
+        WindowStartupLocation="CenterScreen" Icon="/Assets/ServerCloak.ico"
+        FontFamily="{StaticResource UiFont}" Foreground="{DynamicResource Label}"
+        Background="{DynamicResource Bg}" UseLayoutRounding="True" TextOptions.TextFormattingMode="Display">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="48" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Grid x:Name="Root">
+        <!-- Soft colour blobs behind the glass cards -->
+        <Canvas IsHitTestVisible="False" ClipToBounds="True">
+            <Ellipse Width="760" Height="760" Canvas.Left="-200" Canvas.Top="-260">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="{DynamicResource Blob1}" Offset="0"/>
+                        <GradientStop Color="Transparent" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse Width="820" Height="820" Canvas.Left="700" Canvas.Top="120">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="{DynamicResource Blob2}" Offset="0"/>
+                        <GradientStop Color="Transparent" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse Width="640" Height="640" Canvas.Left="120" Canvas.Top="560">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="{DynamicResource Blob3}" Offset="0"/>
+                        <GradientStop Color="Transparent" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+        </Canvas>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="48"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title bar -->
+            <Grid Grid.Row="0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="18,0,0,0">
+                    <Image Source="/Assets/ServerCloak.ico" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <TextBlock Text="ServerCloak" FontFamily="{StaticResource DisplayFont}" FontSize="15" FontWeight="SemiBold" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="VersionText" Style="{StaticResource Muted}" Margin="8,2,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="ThemeButton" Style="{StaticResource ChromeButton}" FontSize="14" Click="ThemeButton_Click" ToolTip="Switch light / dark theme"/>
+                    <Button Style="{StaticResource ChromeButton}" Content="&#xE921;" Click="Minimize_Click"/>
+                    <Button x:Name="MaxButton" Style="{StaticResource ChromeButton}" Content="&#xE922;" Click="Maximize_Click"/>
+                    <Button Style="{StaticResource CloseButton}" Content="&#xE8BB;" Click="Close_Click"/>
+                </StackPanel>
+            </Grid>
+
+            <ScrollViewer x:Name="MainScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="13,0,13,13" PreviewMouseWheel="MainScroll_PreviewMouseWheel">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Banners: test mode, update available -->
+                    <StackPanel Grid.Row="0" Grid.ColumnSpan="4">
+                        <Border x:Name="DryRunBanner" Style="{StaticResource Card}" Padding="18,10" Visibility="Collapsed" Background="{DynamicResource GlassStrong}">
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="Turn off test mode" Style="{StaticResource SmallButton}" Click="DryRunOff_Click"/>
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE7BA;" Foreground="{DynamicResource Amber}" Margin="0,0,10,0"/>
+                                <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" TextWrapping="Wrap"
+                                           Text="Test mode is on: attacks are recorded and shown as blocked, but nothing is blocked in the firewall."/>
+                            </DockPanel>
+                        </Border>
+                        <Border x:Name="UpdateBanner" Style="{StaticResource Card}" Padding="18,10" Visibility="Collapsed" Background="{DynamicResource GlassStrong}">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <Button Content="Release notes" Style="{StaticResource SmallButton}" Click="ReleaseNotes_Click" Margin="0,0,8,0"/>
+                                    <Button x:Name="InstallUpdateButton" Content="Install update" Style="{StaticResource SmallButton}" Click="InstallUpdate_Click"/>
+                                </StackPanel>
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE896;" Foreground="{DynamicResource Tint}" Margin="0,0,10,0"/>
+                                <TextBlock x:Name="UpdateText" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            </DockPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <Grid Grid.Row="1" Grid.ColumnSpan="4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.35*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="1.35*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                    <!-- Service -->
+                    <Border Grid.Column="0" Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Protection service" Style="{StaticResource CardTitle}"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse x:Name="StatusDot" Width="14" Height="14" Fill="{DynamicResource Tertiary}" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="StatusText" Text="Checking…" FontFamily="{StaticResource DisplayFont}" FontSize="24" FontWeight="Bold" Margin="12,0,0,0"/>
+                                </StackPanel>
+                                <TextBlock x:Name="StatusDetail" Style="{StaticResource Muted}" Margin="0,6,0,16"/>
+                                <WrapPanel>
+                                    <Button x:Name="StartStopButton" Style="{StaticResource PrimaryButton}" Click="StartStop_Click" Margin="0,0,8,8"/>
+                                    <Button x:Name="RestartButton" Content="Restart" Click="Restart_Click" Margin="0,0,8,8"/>
+                                    <Button x:Name="InstallButton" Click="Install_Click" Margin="0,0,8,8"/>
+                                </WrapPanel>
+                            </StackPanel>
+                            <Image Visibility="Collapsed" Grid.Column="1" Source="/Assets/ServerCloak.ico" Width="112" Height="112" Opacity="0.9" VerticalAlignment="Center" Margin="12,0,6,0"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Attacks today -->
+                    <Border Grid.Column="1" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Failed attempts, last 24 hours" Style="{StaticResource CardTitle}"/>
+                            <TextBlock x:Name="AttacksTodayText" Text="0" Style="{StaticResource BigNumber}" Foreground="{DynamicResource Amber}"/>
+                            <TextBlock x:Name="AttacksTotalText" Style="{StaticResource Muted}" Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Blocked -->
+                    <Border Grid.Column="2" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Blocked IP addresses" Style="{StaticResource CardTitle}"/>
+                            <TextBlock x:Name="BlockedText" Text="0" Style="{StaticResource BigNumber}" Foreground="{DynamicResource Accent}"/>
+                            <TextBlock x:Name="TopCountryText" Style="{StaticResource Muted}" Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- System -->
+                    <Border Grid.Column="3" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="This server" Style="{StaticResource CardTitle}"/>
+                            <TextBlock x:Name="OsText" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="OsDetail" Style="{StaticResource Muted}" Margin="0,4,0,12"/>
+                            <ItemsControl x:Name="FeatureList">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="1"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type app:FeatureRow}">
+                                        <StackPanel Orientation="Horizontal" Margin="0,3,12,3" ToolTip="{Binding Note}">
+                                            <TextBlock Text="{Binding Glyph}" FontSize="12" Width="20">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Icon}">
+                                                        <Setter Property="Foreground" Value="{DynamicResource Tertiary}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Available}" Value="True">
+                                                                <Setter Property="Foreground" Value="{DynamicResource Green}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding Name}" FontSize="13"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Firewall -->
+                    <Border Grid.Column="4" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Windows Firewall" Style="{StaticResource CardTitle}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock x:Name="FirewallGlyph" Style="{StaticResource Icon}" FontSize="26" Text="&#xEA18;"/>
+                                <TextBlock x:Name="FirewallText" FontSize="20" FontWeight="SemiBold" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock x:Name="FirewallMode" Style="{StaticResource Muted}" Margin="0,8,0,10"/>
+                            <Button x:Name="FirewallOnButton" Content="Turn on" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Click="FirewallOn_Click" Visibility="Collapsed" Margin="0,0,0,10"/>
+                            <Grid x:Name="DynamicKeywordPanel">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Use dynamic keywords" FontSize="13" VerticalAlignment="Center" TextWrapping="Wrap"
+                                           ToolTip="Windows Server 2022 and later: keeps the block list in one firewall dynamic keyword instead of many rules."/>
+                                <CheckBox x:Name="DynamicKeywordSwitch" Grid.Column="1" Style="{StaticResource Switch}" Click="DynamicKeyword_Click"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Country data -->
+                    <Border Grid.Column="5" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Country data" Style="{StaticResource CardTitle}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource Icon}" FontSize="24" Text="&#xE774;" Foreground="{DynamicResource Purple}"/>
+                                <TextBlock x:Name="GeoText" FontSize="17" FontWeight="SemiBold" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock x:Name="GeoDetail" Style="{StaticResource Muted}" Margin="0,8,0,10"/>
+                            <Button x:Name="GeoButton" Content="Update now" HorizontalAlignment="Left" Click="GeoUpdate_Click"/>
+                            <TextBlock x:Name="GeoAttribution" Style="{StaticResource Muted}" FontSize="11" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    </Grid>
+                    <!-- Cloaks -->
+                    <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid>
+                                <TextBlock Text="Cloaks" Style="{StaticResource CardTitle}" FontSize="15" Foreground="{DynamicResource Label}"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                    <TextBlock x:Name="CloakHint" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,12,0" Text="Click a cloak to list its IP addresses."/>
+                                    <Button Content="Add custom rule" Click="AddCustomRule_Click"/>
+                                    <Button Content="Undo changes" Click="ReloadCloaks_Click"/>
+                                    <Button Content="Save" Style="{StaticResource PrimaryButton}" Click="SaveCloaks_Click" Margin="0"/>
+                                </StackPanel>
+                            </Grid>
+                            <DataGrid x:Name="CloakGrid" Grid.Row="1" Margin="0,6,0,0" SelectionChanged="CloakGrid_SelectionChanged" CanUserSortColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="On" Width="60">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding Enabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Cloak" Width="2.4*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding Description}" Style="{StaticResource Muted}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" ToolTip="{Binding Description}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Source" Width="110">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource Pill}">
+                                                    <TextBlock Text="{Binding KindLabel}" FontSize="11" Foreground="{DynamicResource Secondary}"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Port / log folder" Width="1.6*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <TextBox Text="{Binding Port, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="80" HorizontalAlignment="Left" Padding="8,4"
+                                                             Visibility="{Binding IsSniffer, Converter={StaticResource BoolToVis}}"/>
+                                                    <TextBox Text="{Binding LogPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Padding="8,4" ToolTip="{Binding LogPath}"
+                                                             Visibility="{Binding IsLogFile, Converter={StaticResource BoolToVis}}"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Limit" Width="80">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBox Text="{Binding Limit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="56" HorizontalAlignment="Left" Padding="8,4"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Block for" Width="130">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox ItemsSource="{x:Static app:DurationOption.All}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                                          SelectedValue="{Binding BlockDuration, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="116" HorizontalAlignment="Left"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Attempts" Binding="{Binding Attacks}" Width="80" IsReadOnly="True"/>
+                                    <DataGridTemplateColumn Header="Blocked" Width="80">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Blocked}" Foreground="{DynamicResource Accent}" FontWeight="SemiBold"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Width="80">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" Visibility="{Binding IsCustom, Converter={StaticResource BoolToVis}}">
+                                                    <Button Content="&#xE70F;" FontFamily="{StaticResource IconFont}" Style="{StaticResource SmallButton}" ToolTip="Edit" Click="EditCustomRule_Click" Tag="{Binding}" Margin="0,0,4,0"/>
+                                                    <Button Content="&#xE74D;" FontFamily="{StaticResource IconFont}" Style="{StaticResource SmallButton}" ToolTip="Delete" Click="DeleteCustomRule_Click" Tag="{Binding}" Foreground="{DynamicResource Accent}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+
+                    <!-- Attacks over time -->
+                    <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="240"/>
+                            </Grid.RowDefinitions>
+                            <DockPanel Margin="0,0,0,8">
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
+                                    <Border Background="{DynamicResource Fill}" CornerRadius="11" Margin="0,0,10,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <RadioButton x:Name="Range24h" Content="24 hours" Style="{StaticResource Segment}" GroupName="Range" IsChecked="True" Checked="Range_Checked"/>
+                                            <RadioButton x:Name="Range7d" Content="7 days" Style="{StaticResource Segment}" GroupName="Range" Checked="Range_Checked"/>
+                                            <RadioButton x:Name="Range30d" Content="30 days" Style="{StaticResource Segment}" GroupName="Range" Checked="Range_Checked"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Button Content="CSV" Style="{StaticResource SmallButton}" Click="ExportCsv_Click" ToolTip="Export every attempt in this period as CSV" Margin="0,0,6,0"/>
+                                    <Button Content="PDF report" Style="{StaticResource SmallButton}" Click="ExportPdf_Click"/>
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Text="Attacks over time" Style="{StaticResource CardTitle}" FontSize="15" Foreground="{DynamicResource Label}" Margin="0,0,0,2"/>
+                                    <TextBlock x:Name="ChartSummary" Style="{StaticResource Muted}"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <app:AttackChart x:Name="Chart" Grid.Row="1"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- User names -->
+                    <Border Grid.Row="3" Grid.Column="3" Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="230"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="User names tried, 30 days" Style="{StaticResource CardTitle}" FontSize="15" Foreground="{DynamicResource Label}" Margin="0,0,0,2"/>
+                            <TextBlock Grid.Row="1" Style="{StaticResource Muted}" Margin="0,0,0,8" Text="Real means the account exists (wrong password)."/>
+                            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                                <ItemsControl x:Name="UserList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type app:UserRow}">
+                                            <Grid Margin="0,3,6,3">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding User}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip="{Binding User}"/>
+                                                <Border Grid.Column="1" Style="{StaticResource Pill}" Padding="6,1" Margin="6,0" Background="{DynamicResource Accent}"
+                                                        Visibility="{Binding RealAccount, Converter={StaticResource BoolToVis}}">
+                                                    <TextBlock Text="real" FontSize="10" FontWeight="SemiBold" Foreground="White"/>
+                                                </Border>
+                                                <TextBlock Grid.Column="2" FontSize="12" Foreground="{DynamicResource Secondary}" VerticalAlignment="Center">
+                                                    <Run Text="{Binding Attempts, Mode=OneWay}" Foreground="{DynamicResource Label}"/>
+                                                    <Run Text="·"/>
+                                                    <Run Text="{Binding Ips, Mode=OneWay}"/>
+                                                    <Run Text="IPs"/>
+                                                </TextBlock>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+
+                    <!-- Attackers -->
+                    <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="380"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
+                                    <TextBox x:Name="ManualIpBox" Width="170" Padding="10,4" ToolTip="IP address to block permanently"/>
+                                    <Button Content="Block" Style="{StaticResource SmallButton}" Click="ManualBlock_Click" Margin="6,0,6,0"/>
+                                    <Button Content="CSV" Style="{StaticResource SmallButton}" Click="ExportIpsCsv_Click" ToolTip="Export the addresses matching the filter"/>
+                                </StackPanel>
+                                <TextBlock Text="IP addresses" Style="{StaticResource CardTitle}" FontSize="15" Foreground="{DynamicResource Label}"/>
+                            </DockPanel>
+                            <Grid Grid.Row="1" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid>
+                                    <TextBox x:Name="SearchBox" Padding="32,7,10,7" TextChanged="Search_TextChanged"/>
+                                    <TextBlock Text="&#xE721;" Style="{StaticResource Icon}" FontSize="13" Margin="11,0,0,0" Foreground="{DynamicResource Secondary}" IsHitTestVisible="False"/>
+                                    <TextBlock x:Name="SearchHint" Text="Search IP, country or cloak" Foreground="{DynamicResource Tertiary}" Margin="33,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="13"/>
+                                </Grid>
+                                <ComboBox x:Name="CloakFilterBox" Grid.Column="1" Width="170" Margin="10,0,0,0" DisplayMemberPath="Name" SelectionChanged="Filter_Changed"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="14,0,0,0" VerticalAlignment="Center">
+                                    <CheckBox x:Name="BlockedOnlySwitch" Style="{StaticResource Switch}" Click="Filter_Changed"/>
+                                    <TextBlock Text="Blocked only" FontSize="13" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock x:Name="IpCountText" Grid.Column="3" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                            </Grid>
+                            <DataGrid x:Name="IpGrid" Grid.Row="2" IsReadOnly="True" EnableRowVirtualization="True" PreviewMouseRightButtonDown="IpGrid_RightButtonDown">
+                                <DataGrid.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Whitelist this address" Tag="&#xE8FB;" Click="WhitelistIp_Click"/>
+                                        <MenuItem Header="Whitelist its /24 network" Tag="&#xE968;" Click="WhitelistNet_Click"/>
+                                        <MenuItem Header="Unblock" Tag="&#xE785;" Click="UnblockMenu_Click"/>
+                                        <MenuItem Header="Block permanently" Tag="&#xE72E;" Click="BlockMenu_Click"/>
+                                        <MenuItem Header="Copy address" Tag="&#xE8C8;" Click="CopyIp_Click"/>
+                                        <MenuItem Header="Look up on AbuseIPDB" Tag="&#xE774;" Click="LookupIp_Click"/>
+                                    </ContextMenu>
+                                </DataGrid.ContextMenu>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="IP address" Binding="{Binding Ip}" Width="1.6*"/>
+                                    <DataGridTemplateColumn Header="Country" Width="1.4*" SortMemberPath="Country">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Border Style="{StaticResource Pill}" Padding="6,1" Margin="0,0,8,0">
+                                                        <TextBlock Text="{Binding CountryCode}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Secondary}"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Country}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Cloak" Binding="{Binding Cloak}" Width="1.2*"/>
+                                    <DataGridTextColumn Header="Attempts" Binding="{Binding Attacks}" Width="75"/>
+                                    <DataGridTextColumn Header="Last seen" Binding="{Binding LastSeen, StringFormat='dd MMM yyyy HH:mm'}" Width="135"/>
+                                    <DataGridTemplateColumn Header="Blocked" Width="135" SortMemberPath="Locked">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding LockedText}" Foreground="{DynamicResource Accent}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Until" Binding="{Binding UntilText}" Width="135"/>
+                                    <DataGridTemplateColumn Width="90">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="Unblock" Style="{StaticResource SmallButton}" Click="Unblock_Click" Tag="{Binding Ip}"
+                                                        Visibility="{Binding IsBlocked, Converter={StaticResource BoolToVis}}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                                <Button x:Name="PrevPage" Content="&#xE76B;" FontFamily="{StaticResource IconFont}" Style="{StaticResource SmallButton}" Click="PrevPage_Click"/>
+                                <TextBlock x:Name="PageText" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="12,0"/>
+                                <Button x:Name="NextPage" Content="&#xE76C;" FontFamily="{StaticResource IconFont}" Style="{StaticResource SmallButton}" Click="NextPage_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Whitelist -->
+                    <Border Grid.Row="4" Grid.Column="3" Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Whitelist" Style="{StaticResource CardTitle}" FontSize="15" Foreground="{DynamicResource Label}"/>
+                            <TextBlock Grid.Row="1" Style="{StaticResource Muted}" Margin="0,0,0,10"
+                                       Text="One per line: an IP address, a network (10.0.0.0/8) or a range (10.0.0.1-10.0.0.50). This server's own addresses are always allowed. Lines starting with # are notes."/>
+                            <TextBox x:Name="WhitelistBox" Grid.Row="2" AcceptsReturn="True" TextWrapping="NoWrap" VerticalContentAlignment="Top"
+                                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" MinHeight="200"/>
+                            <Button Grid.Row="3" Content="Save whitelist" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Margin="0,10,0,0" Click="SaveWhitelist_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Countries -->
+                    <Border Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="300"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Attempts by country" Style="{StaticResource CardTitle}" FontSize="15" Foreground="{DynamicResource Label}"/>
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <ItemsControl x:Name="CountryList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type app:CountryRow}">
+                                            <Grid Margin="0,4,8,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="44"/>
+                                                    <ColumnDefinition Width="170"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="90"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Style="{StaticResource Pill}" Padding="6,1">
+                                                    <TextBlock Text="{Binding Code}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Secondary}"/>
+                                                </Border>
+                                                <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" FontSize="13"/>
+                                                <Grid Grid.Column="2" VerticalAlignment="Center" Height="8">
+                                                    <Border Background="{DynamicResource Fill}" CornerRadius="4"/>
+                                                    <Border CornerRadius="4" HorizontalAlignment="Left">
+                                                        <Border.Width>
+                                                            <MultiBinding Converter="{StaticResource BarWidth}">
+                                                                <Binding Path="Bar"/>
+                                                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Grid}"/>
+                                                            </MultiBinding>
+                                                        </Border.Width>
+                                                        <Border.Background>
+                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                                <GradientStop Color="{DynamicResource TintColor}" Offset="0"/>
+                                                                <GradientStop Color="{DynamicResource PurpleColor}" Offset="1"/>
+                                                            </LinearGradientBrush>
+                                                        </Border.Background>
+                                                    </Border>
+                                                </Grid>
+                                                <TextBlock Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource Secondary}">
+                                                    <Run Text="{Binding Attacks, Mode=OneWay}" Foreground="{DynamicResource Label}" FontWeight="SemiBold"/>
+                                                    <Run Text="·"/>
+                                                    <Run Text="{Binding Ips, Mode=OneWay}"/>
+                                                    <Run Text="IPs"/>
+                                                </TextBlock>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+
+                    <!-- Recent activity -->
+                    <Border Grid.Row="5" Grid.Column="2" Grid.ColumnSpan="2" Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="300"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Recent activity" Style="{StaticResource CardTitle}" FontSize="15" Foreground="{DynamicResource Label}"/>
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <ItemsControl x:Name="EventList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type app:EventRow}">
+                                            <Grid Margin="0,4,8,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="110"/>
+                                                    <ColumnDefinition Width="150"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding Time}" FontSize="12" Foreground="{DynamicResource Secondary}" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding Ip}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding Message}" FontSize="12" Foreground="{DynamicResource Secondary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+
+                    <!-- Country blocking -->
+                    <Border Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="260"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Country blocking" Style="{StaticResource CardTitle}" FontSize="15" Foreground="{DynamicResource Label}" Margin="0,0,0,2"/>
+                            <TextBlock Grid.Row="1" Style="{StaticResource Muted}" Margin="0,0,0,10"
+                                       Text="Blocks whole countries in the firewall. Whitelisted addresses, private networks and signed-in Remote Desktop clients are never blocked."/>
+                            <Grid Grid.Row="2" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ComboBox x:Name="CountryModeBox" DisplayMemberPath="Value" SelectedValuePath="Key"/>
+                                <Grid Grid.Column="1" Margin="10,0,0,0">
+                                    <TextBox x:Name="CountrySearch" Padding="32,7,10,7" TextChanged="CountrySearch_TextChanged"/>
+                                    <TextBlock Text="&#xE721;" Style="{StaticResource Icon}" FontSize="13" Margin="11,0,0,0" Foreground="{DynamicResource Secondary}" IsHitTestVisible="False"/>
+                                </Grid>
+                            </Grid>
+                            <ListBox x:Name="CountryPickList" Grid.Row="3" VirtualizingPanel.IsVirtualizing="True">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type app:CountryPick}">
+                                        <CheckBox IsChecked="{Binding Selected, Mode=TwoWay}" Content="{Binding Label}" Click="CountryPick_Click"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <DockPanel Grid.Row="4" Margin="0,10,0,0">
+                                <Button DockPanel.Dock="Right" Content="Apply" Style="{StaticResource PrimaryButton}" Click="ApplyCountries_Click" Margin="0"/>
+                                <TextBlock x:Name="CountrySelected" Style="{StaticResource Muted}" VerticalAlignment="Center"/>
+                            </DockPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Block lists -->
+                    <Border Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="2" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" x:Name="FeedUpdateButton" Content="Update now" Style="{StaticResource SmallButton}" Click="UpdateFeeds_Click" VerticalAlignment="Top"/>
+                                <TextBlock Text="Shared block lists" Style="{StaticResource CardTitle}" FontSize="15" Foreground="{DynamicResource Label}" Margin="0,0,0,2"/>
+                            </DockPanel>
+                            <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,8" Text="Known bad networks blocked in advance. The service refreshes them on the schedule below."/>
+                            <ItemsControl x:Name="FeedList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type app:FeedRow}">
+                                        <DockPanel Margin="0,4">
+                                            <CheckBox DockPanel.Dock="Left" Style="{StaticResource Switch}" IsChecked="{Binding Enabled, Mode=TwoWay}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                            <Button DockPanel.Dock="Right" Content="&#xE74D;" FontFamily="{StaticResource IconFont}" Style="{StaticResource SmallButton}" ToolTip="Remove" Click="RemoveFeed_Click" Tag="{Binding}" VerticalAlignment="Center"/>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" ToolTip="{Binding Url}"/>
+                                                <TextBlock Text="{Binding Status}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip="{Binding Status}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource Secondary}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding HasError}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource Accent}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Grid Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="FeedNameBox" ToolTip="Name of the list" Padding="10,5"/>
+                                <TextBox x:Name="FeedUrlBox" Grid.Column="1" Margin="6,0" ToolTip="URL of a list with one IP, range or network per line" Padding="10,5"/>
+                                <Button Grid.Column="2" Content="Add list" Style="{StaticResource SmallButton}" Click="AddFeed_Click"/>
+                            </Grid>
+                            <TextBlock Text="AbuseIPDB API key (free at abuseipdb.com)" Style="{StaticResource FieldLabel}" Margin="0,14,0,4"/>
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="Test key" Style="{StaticResource SmallButton}" Click="TestAbuseKey_Click" Margin="6,0,0,0"/>
+                                <PasswordBox x:Name="AbuseKeyBox" Padding="10,5"/>
+                            </DockPanel>
+                            <DockPanel Style="{StaticResource SwitchRow}" Margin="0,10,0,0">
+                                <CheckBox x:Name="AbuseReportSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}"/>
+                                <TextBlock Text="Report blocked addresses to AbuseIPDB" FontSize="13" VerticalAlignment="Center"/>
+                            </DockPanel>
+                            <DockPanel Style="{StaticResource SwitchRow}">
+                                <TextBox x:Name="FeedHoursBox" DockPanel.Dock="Right" Width="60" Padding="8,4"/>
+                                <TextBlock Text="Refresh lists every (hours)" FontSize="13" VerticalAlignment="Center"/>
+                            </DockPanel>
+                            <Button Content="Save block lists" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Margin="0,10,0,0" Click="SaveFeeds_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Alerts -->
+                    <Border Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Alerts" Style="{StaticResource CardTitle}" FontSize="15" Foreground="{DynamicResource Label}" Margin="0,0,0,2"/>
+                            <TextBlock Style="{StaticResource Muted}" Text="Email and a Slack, Teams (workflow webhook) or Discord webhook. The password and webhook URL are stored encrypted."/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="SMTP server" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox x:Name="SmtpHostBox"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Port" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox x:Name="SmtpPortBox"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="4">
+                                    <TextBlock Text="TLS" Style="{StaticResource FieldLabel}"/>
+                                    <CheckBox x:Name="SmtpSslSwitch" Style="{StaticResource Switch}" Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="User name" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox x:Name="SmtpUserBox"/>
+                                    <TextBlock Text="From" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox x:Name="MailFromBox"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Password" Style="{StaticResource FieldLabel}"/>
+                                    <PasswordBox x:Name="SmtpPasswordBox"/>
+                                    <TextBlock Text="To (comma separated)" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox x:Name="MailToBox"/>
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Text="Webhook URL" Style="{StaticResource FieldLabel}"/>
+                            <PasswordBox x:Name="WebhookBox"/>
+
+                            <TextBlock Text="Send an alert when" Style="{StaticResource FieldLabel}" Margin="0,14,0,2"/>
+                            <WrapPanel>
+                                <CheckBox x:Name="OnBlockBox" Content="an address is blocked" Margin="0,4,18,4"/>
+                                <CheckBox x:Name="OnServiceStopBox" Content="the service stops" Margin="0,4,18,4"/>
+                                <CheckBox x:Name="OnRealAccountBox" Content="a real account is targeted" Margin="0,4,18,4"/>
+                                <CheckBox x:Name="OnHealthBox" Content="a health check fails" Margin="0,4,18,4"/>
+                            </WrapPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,4">
+                                <CheckBox x:Name="OnSpikeBox" Content="at least" VerticalAlignment="Center"/>
+                                <TextBox x:Name="SpikeBlocksBox" Width="50" Padding="6,3" Margin="8,0"/>
+                                <TextBlock Text="blocks in" VerticalAlignment="Center" FontSize="13"/>
+                                <TextBox x:Name="SpikeMinutesBox" Width="50" Padding="6,3" Margin="8,0"/>
+                                <TextBlock Text="minutes" VerticalAlignment="Center" FontSize="13"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,4">
+                                <CheckBox x:Name="DailySummaryBox" Content="daily summary at" VerticalAlignment="Center"/>
+                                <TextBox x:Name="SummaryHourBox" Width="50" Padding="6,3" Margin="8,0"/>
+                                <TextBlock Text=":00" VerticalAlignment="Center" FontSize="13"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                <Button Content="Save alerts" Style="{StaticResource PrimaryButton}" Click="SaveAlerts_Click"/>
+                                <Button Content="Send test" Click="TestAlert_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Protection -->
+                    <Border Grid.Row="7" Grid.Column="2" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Protection" Style="{StaticResource CardTitle}" FontSize="15" Foreground="{DynamicResource Label}"/>
+                            <DockPanel Style="{StaticResource SwitchRow}">
+                                <CheckBox x:Name="EscalationSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}"/>
+                                <TextBlock Text="Repeat offender escalation" FontSize="13" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            </DockPanel>
+                            <TextBlock Style="{StaticResource Muted}" Text="Block time for the 1st, 2nd, 3rd… block of the same address (m, h, d, w or permanent). Used instead of the cloak block time while on."/>
+                            <TextBox x:Name="EscalationBox" Margin="0,6,0,0"/>
+                            <DockPanel Style="{StaticResource SwitchRow}" Margin="0,12,0,0">
+                                <CheckBox x:Name="DryRunSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}"/>
+                                <TextBlock Text="Test mode (record only, block nothing)" FontSize="13" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            </DockPanel>
+                            <DockPanel Style="{StaticResource SwitchRow}">
+                                <TextBox x:Name="HealthHoursBox" DockPanel.Dock="Right" Width="56" Padding="8,4"/>
+                                <TextBlock Text="Health alert if no attempts for (hours, 0 = off)" FontSize="13" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            </DockPanel>
+                            <DockPanel Style="{StaticResource SwitchRow}">
+                                <TextBox x:Name="RetentionBox" DockPanel.Dock="Right" Width="56" Padding="8,4"/>
+                                <TextBlock Text="Keep attack logs for (days)" FontSize="13" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            </DockPanel>
+                            <TextBlock x:Name="SessionGuardText" Style="{StaticResource Muted}" Margin="0,8,0,0"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                <Button Content="Save" Style="{StaticResource PrimaryButton}" Click="SaveProtection_Click"/>
+                                <Button Content="Clear logs" Style="{StaticResource DangerButton}" Click="ClearLogs_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- App -->
+                    <Border Grid.Row="7" Grid.Column="3" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="App" Style="{StaticResource CardTitle}" FontSize="15" Foreground="{DynamicResource Label}"/>
+                            <DockPanel Style="{StaticResource SwitchRow}">
+                                <CheckBox x:Name="TraySwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" Click="Tray_Click"/>
+                                <TextBlock Text="Minimise to the tray" FontSize="13" VerticalAlignment="Center"/>
+                            </DockPanel>
+                            <DockPanel Style="{StaticResource SwitchRow}">
+                                <CheckBox x:Name="PopupSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" Click="Tray_Click"/>
+                                <TextBlock Text="Pop-ups for blocks and alerts" FontSize="13" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            </DockPanel>
+                            <DockPanel Style="{StaticResource SwitchRow}">
+                                <CheckBox x:Name="StartupSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" Click="Startup_Click"/>
+                                <TextBlock Text="Start in the tray at sign-in" FontSize="13" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            </DockPanel>
+
+                            <TextBlock Text="Settings backup" Style="{StaticResource FieldLabel}" Margin="0,14,0,4"/>
+                            <WrapPanel>
+                                <Button Content="Export" Click="ExportSettings_Click" Margin="0,0,8,8"/>
+                                <Button Content="Import" Click="ImportSettings_Click" Margin="0,0,8,8"/>
+                            </WrapPanel>
+
+                            <TextBlock Text="Updates from GitHub (owner/repository)" Style="{StaticResource FieldLabel}" Margin="0,8,0,4"/>
+                            <TextBox x:Name="RepoBox"/>
+                            <Button x:Name="CheckUpdateButton" Content="Check for updates" Click="CheckUpdate_Click" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                            <TextBlock x:Name="UpdateStatus" Style="{StaticResource Muted}" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Toast -->
+        <Border x:Name="Toast" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,28" Padding="18,10" CornerRadius="14"
+                Background="{DynamicResource GlassStrong}" BorderBrush="{DynamicResource GlassBorder}" BorderThickness="1" Visibility="Collapsed">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="24" ShadowDepth="4" Direction="270" Color="{DynamicResource ShadowColor}"/>
+            </Border.Effect>
+            <TextBlock x:Name="ToastText" FontSize="13" FontWeight="SemiBold"/>
+        </Border>
+    </Grid>
+</Window>

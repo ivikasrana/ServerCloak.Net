@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ServerCloak.App/ServerCloak.App.csproj" />
+    <Project Path="src/ServerCloak.Core/ServerCloak.Core.csproj" />
+    <Project Path="src/ServerCloak.Service/ServerCloak.Service.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ServerCloak.Tests/ServerCloak.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/IconGen/IconGen.csproj" />
+  </Folder>
+</Solution>

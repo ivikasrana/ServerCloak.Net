@@ -1,0 +1,93 @@
+<Window x:Class="ServerCloak.App.CustomRuleWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:app="clr-namespace:ServerCloak.App"
+        Title="Custom rule" Width="620" SizeToContent="Height" WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        FontFamily="{StaticResource UiFont}" Foreground="{DynamicResource Label}" Background="{DynamicResource Bg}"
+        UseLayoutRounding="True" TextOptions.TextFormattingMode="Display" ShowInTaskbar="False">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="44" ResizeBorderThickness="0" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="44"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="TitleText" Text="Custom rule" FontFamily="{StaticResource DisplayFont}" FontSize="15" FontWeight="SemiBold" Margin="20,0" VerticalAlignment="Center"/>
+        <Button Style="{StaticResource CloseButton}" Content="&#xE8BB;" HorizontalAlignment="Right" VerticalAlignment="Top" Click="Cancel_Click"/>
+
+        <Border Grid.Row="1" Style="{StaticResource Card}" Margin="14,0,14,14">
+            <StackPanel>
+                <TextBlock Text="Name" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
+                <TextBox x:Name="NameBox"/>
+
+                <TextBlock Text="Source" Style="{StaticResource FieldLabel}"/>
+                <StackPanel Orientation="Horizontal">
+                    <RadioButton x:Name="EventLogRadio" Content="Event log" Style="{StaticResource Segment}" GroupName="Kind" IsChecked="True" Checked="Kind_Checked"/>
+                    <RadioButton x:Name="LogFileRadio" Content="Log file" Style="{StaticResource Segment}" GroupName="Kind" Checked="Kind_Checked"/>
+                </StackPanel>
+
+                <Grid x:Name="EventLogPanel">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Event log name (for example Application, Security, Microsoft-Windows-…/Operational)" Style="{StaticResource FieldLabel}" TextWrapping="Wrap"/>
+                        <TextBox x:Name="LogNameBox"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Event IDs (comma separated)" Style="{StaticResource FieldLabel}" TextWrapping="Wrap"/>
+                        <TextBox x:Name="EventIdsBox"/>
+                    </StackPanel>
+                </Grid>
+
+                <Grid x:Name="LogFilePanel" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Folder (may end with a wildcard folder, for example C:\Logs\Site*)" Style="{StaticResource FieldLabel}" TextWrapping="Wrap"/>
+                        <TextBox x:Name="FolderBox"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Files" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="FilterBox" Text="*.log"/>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock x:Name="PatternLabel" Style="{StaticResource FieldLabel}" TextWrapping="Wrap"/>
+                <TextBox x:Name="PatternBox" FontFamily="Consolas" TextChanged="Test_Changed"/>
+
+                <TextBlock Text="Test with a sample line" Style="{StaticResource FieldLabel}"/>
+                <TextBox x:Name="SampleBox" FontFamily="Consolas" TextChanged="Test_Changed"/>
+                <TextBlock x:Name="TestResult" Style="{StaticResource Muted}" Margin="0,6,0,0"/>
+
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Limit" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="LimitBox" Width="70" HorizontalAlignment="Left" Text="5"/>
+                    </StackPanel>
+                    <StackPanel Margin="16,0,0,0">
+                        <TextBlock Text="Block for" Style="{StaticResource FieldLabel}"/>
+                        <ComboBox x:Name="DurationBox" Width="140" ItemsSource="{x:Static app:DurationOption.All}" DisplayMemberPath="Label" SelectedValuePath="Value"/>
+                    </StackPanel>
+                    <StackPanel Margin="16,0,0,0">
+                        <TextBlock Text="On" Style="{StaticResource FieldLabel}"/>
+                        <CheckBox x:Name="EnabledSwitch" Style="{StaticResource Switch}" IsChecked="True" HorizontalAlignment="Left" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+                    <Button Content="Cancel" Click="Cancel_Click"/>
+                    <Button Content="Save" Style="{StaticResource PrimaryButton}" Click="Save_Click" Margin="0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

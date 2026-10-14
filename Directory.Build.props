@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <Version>3.0.0</Version>
+    <Company>Vikas Rana</Company>
+    <Product>ServerCloak</Product>
+    <Copyright>Copyright © Vikas Rana</Copyright>
+  </PropertyGroup>
+</Project>
