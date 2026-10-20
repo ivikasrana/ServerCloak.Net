@@ -61,7 +61,8 @@ public static partial class IpUtil
             ip = ip.MapToIPv4();
 
         if (entry.Contains('/'))
-            return IPNetwork.TryParse(entry, out var net) && net.Contains(ip);
+            return RangeSet.TryParse(entry, out var netStart, out var netEnd)
+                && RangeSet.FromAddress(ip) is var v && v >= netStart && v <= netEnd;
 
         int dash = entry.IndexOf('-');
         if (dash > 0)
@@ -79,7 +80,7 @@ public static partial class IpUtil
     {
         entry = entry.Trim();
         if (entry.Contains('/'))
-            return IPNetwork.TryParse(entry, out _);
+            return RangeSet.TryParse(entry, out _, out _);
         int dash = entry.IndexOf('-');
         if (dash > 0)
             return IPAddress.TryParse(entry[..dash].Trim(), out _) && IPAddress.TryParse(entry[(dash + 1)..].Trim(), out _);

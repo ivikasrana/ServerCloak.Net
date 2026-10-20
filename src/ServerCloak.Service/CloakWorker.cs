@@ -201,7 +201,7 @@ public class CloakWorker(ILogger<CloakWorker> logger, ILoggerFactory loggerFacto
     {
         try
         {
-            var attempts = CloakStore.GetIpLogs(cloak, false, ip, 0, 1).Rows.FirstOrDefault()?.Attacks ?? 0;
+            var attempts = CloakStore.GetIpLogs(cloak, false, ip, 0, 50).Rows.FirstOrDefault(x => x.Ip == ip)?.Attacks ?? 0;
             await BlockFeeds.ReportAsync(ip, cloak, name, attempts, _stopping);
         }
         catch (Exception ex) { logger.LogWarning(ex, "Reporting {Ip} to AbuseIPDB failed.", ip); }

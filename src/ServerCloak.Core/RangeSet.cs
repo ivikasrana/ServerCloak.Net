@@ -204,10 +204,14 @@ public class RangeSet
 
         if (entry.Contains('/'))
         {
-            if (!IPNetwork.TryParse(entry, out var net))
+            int slash = entry.IndexOf('/');
+            if (!IPAddress.TryParse(entry[..slash].Trim(), out var baseAddr)
+                || !int.TryParse(entry[(slash + 1)..].Trim(), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var prefix))
                 return false;
-            var baseAddr = net.BaseAddress;
-            int bits = baseAddr.AddressFamily == AddressFamily.InterNetwork ? net.PrefixLength + 96 : net.PrefixLength;
+            bool v4 = baseAddr.AddressFamily == AddressFamily.InterNetwork;
+            if (prefix > (v4 ? 32 : 128))
+                return false;
+            int bits = v4 ? prefix + 96 : prefix;
             start = FromAddress(baseAddr);
             var hostMask = bits >= 128 ? UInt128.Zero : (UInt128.MaxValue >> bits);
             start &= ~hostMask;
